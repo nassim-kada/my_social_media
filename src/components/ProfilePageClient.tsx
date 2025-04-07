@@ -28,7 +28,7 @@ import {
   LinkIcon,
   MapPinIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 type User = Awaited<ReturnType<typeof getProfileByUsername>>;
@@ -39,6 +39,7 @@ interface ProfilePageClientProps {
   posts: Posts;
   likedPosts: Posts;
   isFollowing: boolean;
+  currentUserId?: string | null; // Add this prop to accept the current user's DB ID
 }
 
 function ProfilePageClient({
@@ -46,11 +47,39 @@ function ProfilePageClient({
   likedPosts,
   posts,
   user,
+  currentUserId, // Get the current user's DB ID from props
 }: ProfilePageClientProps) {
   const { user: currentUser } = useUser();
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
   const [isUpdatingFollow, setIsUpdatingFollow] = useState(false);
+  const [currentDbUserId, setCurrentDbUserId] = useState<string | null>(currentUserId || null);
+
+  // If you need to fetch the currentUserId from an API, you can use this effect
+  // This is only needed if currentUserId isn't passed as a prop
+  useEffect(() => {
+    // Example function to fetch current user's DB ID if not provided as a prop
+    const fetchCurrentDbUserId = async () => {
+      if (!currentUser) return;
+      
+      try {
+        // This depends on your implementation - you might have an API endpoint for this
+        // const response = await fetch(`/api/users/current`);
+        // const data = await response.json();
+        // setCurrentDbUserId(data.id);
+        
+        // Alternatively, if you have user info stored somewhere else
+        // const userId = getUserIdFromSomewhere();
+        // setCurrentDbUserId(userId);
+      } catch (error) {
+        console.error("Failed to fetch current user ID:", error);
+      }
+    };
+
+    if (!currentDbUserId && currentUser) {
+      fetchCurrentDbUserId();
+    }
+  }, [currentUser, currentDbUserId]);
 
   const [editForm, setEditForm] = useState({
     name: user.name || "",
@@ -203,7 +232,7 @@ function ProfilePageClient({
           <TabsContent value="posts" className="mt-6">
             <div className="space-y-6">
               {posts.length > 0 ? (
-                posts.map((post) => <PostCard key={post.id} post={post} dbUserId={user.id} />)
+                posts.map((post) => <PostCard key={post.id} post={post} dbUserId={currentDbUserId} />)
               ) : (
                 <div className="text-center py-8 text-muted-foreground">No posts yet</div>
               )}
@@ -213,7 +242,7 @@ function ProfilePageClient({
           <TabsContent value="likes" className="mt-6">
             <div className="space-y-6">
               {likedPosts.length > 0 ? (
-                likedPosts.map((post) => <PostCard key={post.id} post={post} dbUserId={user.id} />)
+                likedPosts.map((post) => <PostCard key={post.id} post={post} dbUserId={currentDbUserId} />)
               ) : (
                 <div className="text-center py-8 text-muted-foreground">No liked posts to show</div>
               )}
