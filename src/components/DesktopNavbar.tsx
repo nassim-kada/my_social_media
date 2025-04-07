@@ -33,7 +33,7 @@ async function DesktopNavbar() {
               }`}
             >
               <UserIcon className="w-4 h-4" />
-              <span className="hidden lg:inline">Profile</span>
+              <span className="hidden lg:inline">Profile </span>
             </Link>
           </Button>
           <UserButton />
